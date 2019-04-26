@@ -1,0 +1,9 @@
+# 0 - Search     
+# 1 - Navi_See     
+# 2 - WAIT
+
+int32 action
+---
+int32[] observations 
+bool success
+---
