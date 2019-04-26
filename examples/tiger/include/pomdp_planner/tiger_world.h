@@ -1,6 +1,8 @@
 #include <tiger.h>
 #include <despot/interface/world.h>
+
 #include <tiger/TrackObsAction.h>
+//#include <actionlib/client/terminal_state.h>
 #include <actionlib/client/simple_action_client.h>
 #include <ros/ros.h>
 using namespace despot;
@@ -10,6 +12,7 @@ public:
     ros::NodeHandlePtr nh;
     //actionlib::SimpleActionClient<tiger::TrackObsAction> ac_;
     //ros::ServiceClient client;
+    int tiger_state;
 
     virtual bool Connect();
 

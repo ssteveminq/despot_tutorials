@@ -1,6 +1,8 @@
 #include <tiger.h>
 #include <ros/ros.h>
 #include <tiger/TrackObsAction.h>
+//#include <tiger/TrackObsGoal.h>
+//#include <tiger/TrackObsResult.h>
 #include <tiger_world.h>
 
 // for tests
@@ -34,6 +36,8 @@ bool TigerWorld::Connect(){
 	  ROS_INFO("Initialized laser with default noise: %f stddev.", noise_sigma_);
 	}
 
+    tiger_state=0;
+
 	// wait for laser tag controller service to show up (blocking call)
 	//ros::service::waitForService("laser_tag_action_obs", -1);
 
@@ -50,16 +54,41 @@ State* TigerWorld::Initialize(){
 
 //Get the state of the system (only applicable for simulators or POMDP world)
 State* TigerWorld::GetCurrentState(){
-	return NULL;
+    return NULL;
+
+	//return NULL;
 }
 
 //Send action to be executed by the system, receive observations terminal signals from the system
 bool TigerWorld::ExecuteAction(ACT_TYPE action, OBS_TYPE& obs){
 
+    ROS_INFO("execute_action");
+
     actionlib::SimpleActionClient<tiger::TrackObsAction> ac_("tiger_obs", true);
     ac_.waitForServer();
+    
+    tiger::TrackObsGoal goal;
+    goal.action = (int) action;
+    ac_.sendGoal(goal);
 
-    return true;
+    bool finished_timeout = ac_.waitForResult(ros::Duration(10.0));
+    if(finished_timeout )
+    {
+        //actionlib::SimpleClientGoalState state =ac_.getSTate();
+        ROS_INFO("Obs action succeed");
+        //SimpleClientGoalState = ac_.getState();
+        tiger::TrackObsResult result= *(ac_.getResult());
+        tiger_state = result.state;
+         //*ac_.getResult();
+    
+    }
+    else
+    {
+        ROS_INFO("Obs_function did not finish before the time out");
+    
+    }
+
+    return 0;
 	/* laser_tag::TagActionObs is a ROS service that takes in an action (integer) 
 	 * and outputs observations (8 intergers) after executing the action. If the 
 	 * 'Tag' action is called, it returns a boolean 'tag_success' with the outcome.

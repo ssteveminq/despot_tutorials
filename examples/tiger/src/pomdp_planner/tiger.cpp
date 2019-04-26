@@ -76,6 +76,7 @@ Tiger::Tiger() {
 
 bool Tiger::Step(State& s, double random_num, ACT_TYPE action, double& reward,
 	OBS_TYPE& obs) const {
+    std::cout<<"obs"<<obs<<std::endl;
 	TigerState& state = static_cast<TigerState&>(s);
 	bool terminal = false;
 
