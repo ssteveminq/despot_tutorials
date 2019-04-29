@@ -68,10 +68,10 @@ class hsr_interface(object):
             if coin <0.5:
                 self.tiger_position = 0
                 # obs = 0
-                obs = 0
+                obs = 2
             else:
                 self.tiger_position =1
-                obs = 1
+                obs = 2
                 # obs =1
         else:
             reward = -1

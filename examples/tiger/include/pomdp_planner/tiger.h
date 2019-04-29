@@ -43,7 +43,7 @@ public:
 	int NumActions() const;
 	double ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const;
 
-	//double Reward(const State& s,  ACT_TYPE a) const;
+    double Reward(const State& s,  ACT_TYPE a) const;
 	double Reward(int s,  ACT_TYPE a) const;
 
 

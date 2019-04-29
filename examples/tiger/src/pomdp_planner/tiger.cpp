@@ -120,12 +120,25 @@ int Tiger::NumActions() const {
 	return 3;
 }
 
+
+double Tiger::Reward(const State& state,  ACT_TYPE a) const
+{
+    std::cout<<"tiger reward function"<<std::endl;
+    const TigerState* s= static_cast<const TigerState*>(&state);
+    double reward = 0;
+    if (a== LEFT || a== RIGHT) {
+        reward =s->tiger_position!= a? 10 : -100;
+    } else {
+        reward = -1;
+    }
+    return reward;
+}
+
+
 double Tiger::Reward(int s, ACT_TYPE a) const
 {
-    std::cout<<"reward function"<<std::endl;
+    //std::cout<<"reward function"<<std::endl;
     //ROS_INFO("reward");
-
-    //TigerState& state = static_cast<TigerState&>(s);
     double reward = 0;
     if (a== LEFT || a== RIGHT) {
         reward =s!= a? 10 : -100;
@@ -133,16 +146,17 @@ double Tiger::Reward(int s, ACT_TYPE a) const
         reward = -1;
 	}
     return reward;
-
 }
+
 
 
 double Tiger::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const {
 	const TigerState& state = static_cast<const TigerState&>(s);
 
-    std::cout<<"ObsProb"<<std::endl;
+    //std::cout<<"ObsProb"<<std::endl;
 	if (a != LISTEN)
-		return obs == 2;
+        return (obs==2);
+		//return 0.0;
 
 	return state.tiger_position == obs ? (1 - NOISE) : NOISE;
 }

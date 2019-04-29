@@ -56,34 +56,34 @@ public:
     }
   }
 
-  bool RunStep(Solver* solver, World* world, Logger* logger) {
-    logger->CheckTargetTime();
+  //bool RunStep(Solver* solver, World* world, Logger* logger) {
+    //logger->CheckTargetTime();
 
-    double step_start_t = get_time_second();
+    //double step_start_t = get_time_second();
 
-    double start_t = get_time_second();
-    ACT_TYPE action = solver->Search().action;
-    double end_t = get_time_second();
-    double search_time = (end_t - start_t);
-    logi << "[Custom RunStep] Time spent in " << typeid(*solver).name()
-        << "::Search(): " << search_time << endl;
+    //double start_t = get_time_second();
+    //ACT_TYPE action = solver->Search().action;
+    //double end_t = get_time_second();
+    //double search_time = (end_t - start_t);
+    //logi << "[Custom RunStep] Time spent in " << typeid(*solver).name()
+        //<< "::Search(): " << search_time << endl;
 
-    OBS_TYPE obs;
-    start_t = get_time_second();
-    bool terminal = world->ExecuteAction(action, obs);
-    end_t = get_time_second();
-    double execute_time = (end_t - start_t);
-    logi << "[Custom RunStep] Time spent in ExecuteAction(): " << execute_time << endl;
+    //OBS_TYPE obs;
+    //start_t = get_time_second();
+    //bool terminal = world->ExecuteAction(action, obs);
+    //end_t = get_time_second();
+    //double execute_time = (end_t - start_t);
+    //logi << "[Custom RunStep] Time spent in ExecuteAction(): " << execute_time << endl;
 
-    start_t = get_time_second();
-    solver->BeliefUpdate(action, obs);
-    end_t = get_time_second();
-    double update_time = (end_t - start_t);
-    logi << "[Custom RunStep] Time spent in Update(): " << update_time << endl;
+    //start_t = get_time_second();
+    //solver->BeliefUpdate(action, obs);
+    //end_t = get_time_second();
+    //double update_time = (end_t - start_t);
+    //logi << "[Custom RunStep] Time spent in Update(): " << update_time << endl;
 
-    return logger->SummarizeStep(step_++, round_, terminal, action, obs,
-        step_start_t);
-  }
+    //return logger->SummarizeStep(step_++, round_, terminal, action, obs,
+        //step_start_t);
+  //}
 
 
 };
