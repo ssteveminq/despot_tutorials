@@ -1,0 +1,15 @@
+<launch>
+
+    <arg name="noise" default="0.5"/>
+    <group ns="/robot">
+    <!-- Youbot high-level interface -->
+    <node pkg="active_track" type="hsrb_interface" name="hsrb_interface" output="screen">
+    <param name="noise_sigma" type="double" value="$(arg noise)"/>
+    </node>
+
+    </group>
+
+	<!-- High level laser tag controller -->
+	<node pkg="active_track" type="laser_tag_controller" name="laser_tag_controller" output="screen"/>
+
+</launch>
