@@ -37,8 +37,7 @@ catkin_package(
 include_directories(
   ${catkin_INCLUDE_DIRS}
   ${Boost_INCLUDE_DIRS}
-  include/robot_controller
-  include/pomdp_planner
+  include
 )
 
 #add_executable(hsrb_interface src/robot_controller/hsrb_interface.cpp)
@@ -51,8 +50,8 @@ include_directories(
 #target_link_libraries(tiger_controller ${catkin_LIBRARIES})
 
 ## Declare a C++ executable
-add_executable(pomdp_planner src/pomdp_planner/search.cpp
-    src/pomdp_planner/search_world.cpp src/pomdp_planner/main.cpp)
+add_executable(pomdp_planner src/search.cpp
+    src/search_world.cpp src/main.cpp)
 add_dependencies(pomdp_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(pomdp_planner despot ${catkin_LIBRARIES})
 
