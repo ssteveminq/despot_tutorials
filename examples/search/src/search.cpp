@@ -9,9 +9,9 @@ using namespace std;
 
 namespace despot {
 
-const ACT_TYPE Search::LEFT = 0;
-const ACT_TYPE Search::RIGHT = 1;
-const ACT_TYPE Search::LISTEN = 2;
+const ACT_TYPE Search::SEARCH = 0; //action for searching
+const ACT_TYPE Search::MOVE = 1; //action for avoiding occlusion
+const ACT_TYPE Search::WAIT = 2; //action for wait
 const double Search::NOISE = 0.15;
 
 /* =============================================================================
@@ -27,7 +27,7 @@ SearchState::SearchState(int position) :
 }
 
 string SearchState::text() const {
-	return object_position == Search::LEFT ? "LEFT" : "RIGHT";
+	return object_position == Search::SEARCH ? "SEARCH" : "MOVE";
 }
 
 /* =============================================================================
@@ -45,8 +45,8 @@ public:
 	ACT_TYPE Action(const vector<State*>& particles, RandomStreams& streams,
 		History& history) const {
 		/*
-		 if (history.Size() == 0 || history.LastAction() != LISTEN) {
-		 actions->push_back(LISTEN);
+		 if (history.Size() == 0 || history.LastAction() != WAIT) {
+		 actions->push_back(WAIT);
 		 return actions;
 		 }
 
@@ -55,15 +55,15 @@ public:
 
 		int count_diff = 0;
 		for (int i = history.Size() - 1;
-			i >= 0 && history.Action(i) == Search::LISTEN; i--)
-			count_diff += history.Observation(i) == Search::LEFT ? 1 : -1;
+			i >= 0 && history.Action(i) == Search::WAIT; i--)
+			count_diff += history.Observation(i) == Search::SEARCH ? 1 : -1;
 
 		if (count_diff >= 2)
-			return Search::RIGHT;
+			return Search::MOVE;
 		else if (count_diff <= -2)
-			return Search::LEFT;
+			return Search::SEARCH;
 		else
-			return Search::LISTEN;
+			return Search::WAIT;
 	}
 };
 
@@ -81,9 +81,9 @@ bool Search::Step_world( State& s,double random_num,  ACT_TYPE action, double& r
     std::cout<<"Step_world"<<std::endl;
 
 	bool terminal = false;
-    if (action == LEFT || action == RIGHT) {
+    if (action == SEARCH || action == MOVE) {
 		reward = state.object_position != action ? 10 : -100;
-		state.object_position = random_num <= 0.5 ? LEFT : RIGHT;
+		state.object_position = random_num <= 0.5 ? SEARCH : MOVE;
 	} else {
 		reward = -1;
 	}
@@ -98,16 +98,16 @@ bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
 	SearchState& state = static_cast<SearchState&>(s);
 	bool terminal = false;
 
-	if (action == LEFT || action == RIGHT) {
+	if (action == SEARCH || action == MOVE) {
 		reward = state.object_position != action ? 10 : -100;
-		state.object_position = random_num <= 0.5 ? LEFT : RIGHT;
+		state.object_position = random_num <= 0.5 ? SEARCH : MOVE;
 		obs = 2; // can use arbitary observation
 	} else {
 		reward = -1;
 		if (random_num <= 1 - NOISE)
 			obs = state.object_position;
 		else
-			obs = (LEFT + RIGHT - state.object_position);
+			obs = (SEARCH + MOVE - state.object_position);
 	}
 	return terminal;
 }
@@ -126,7 +126,7 @@ double Search::Reward(const State& state,  ACT_TYPE a) const
     std::cout<<"search reward function"<<std::endl;
     const SearchState* s= static_cast<const SearchState*>(&state);
     double reward = 0;
-    if (a== LEFT || a== RIGHT) {
+    if (a== SEARCH || a== MOVE) {
         reward =s->object_position!= a? 10 : -100;
     } else {
         reward = -1;
@@ -140,7 +140,7 @@ double Search::Reward(int s, ACT_TYPE a) const
     //std::cout<<"reward function"<<std::endl;
     //ROS_INFO("reward");
     double reward = 0;
-    if (a== LEFT || a== RIGHT) {
+    if (a== SEARCH || a== MOVE) {
         reward =s!= a? 10 : -100;
     } else {
         reward = -1;
@@ -154,7 +154,7 @@ double Search::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const {
 	const SearchState& state = static_cast<const SearchState&>(s);
 
     //std::cout<<"ObsProb"<<std::endl;
-	if (a != LISTEN)
+	if (a != WAIT)
         return (obs==2);
 		//return 0.0;
 
@@ -169,10 +169,10 @@ Belief* Search::InitialBelief(const State* start, string type) const {
     std::cout<<"search_belief"<<std::endl;
 	vector<State*> particles;
 	SearchState* left = static_cast<SearchState*>(Allocate(-1, 0.5));
-	left->object_position = LEFT;
+	left->object_position = SEARCH;
 	particles.push_back(left);
 	SearchState* right = static_cast<SearchState*>(Allocate(-1, 0.5));
-	right->object_position = RIGHT;
+	right->object_position = MOVE;
 	particles.push_back(right);
 	return new ParticleBelief(particles, this);
 }
@@ -185,14 +185,14 @@ ScenarioLowerBound* Search::CreateScenarioLowerBound(string name,
 	} else if (name == "RANDOM") {
 		bound = new RandomPolicy(this,
 			CreateParticleLowerBound(particle_bound_name));
-	} else if (name == "LEFT") {
-		bound = new BlindPolicy(this, LEFT,
+	} else if (name == "SEARCH") {
+		bound = new BlindPolicy(this, SEARCH,
 			CreateParticleLowerBound(particle_bound_name));
-	} else if (name == "RIGHT") {
-		bound = new BlindPolicy(this, RIGHT,
+	} else if (name == "MOVE") {
+		bound = new BlindPolicy(this, MOVE,
 			CreateParticleLowerBound(particle_bound_name));
-	} else if (name == "LISTEN") {
-		bound = new BlindPolicy(this, LISTEN,
+	} else if (name == "WAIT") {
+		bound = new BlindPolicy(this, WAIT,
 			CreateParticleLowerBound(particle_bound_name));
 	} else if (name == "OPTIMAL") {
 		bound = new OptimalSearchPolicy(this,
@@ -213,13 +213,13 @@ void Search::PrintBelief(const Belief& belief, ostream& out) const {
 }
 
 void Search::PrintObs(const State& state, OBS_TYPE obs, ostream& out) const {
-	out << (obs == LEFT ? "LEFT" : "RIGHT") << endl;
+	out << (obs == SEARCH ? "SEARCH" : "MOVE") << endl;
 }
 
 void Search::PrintAction(ACT_TYPE action, ostream& out) const {
-	if (action == LEFT) {
+	if (action == SEARCH) {
 		out << "Open left" << endl;
-	} else if (action == RIGHT) {
+	} else if (action == MOVE) {
 		out << "Open right" << endl;
 	} else {
 		out << "Listen" << endl;
