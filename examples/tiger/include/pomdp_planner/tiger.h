@@ -35,11 +35,17 @@ public:
 	Tiger();
 	Tiger(std::string params_file);
 
+    bool Step_world( State& s, double random_num,  ACT_TYPE action, double& reward, OBS_TYPE obs) const; 
+
 	bool Step(State& s, double random_num, ACT_TYPE action, double& reward,
 		OBS_TYPE& obs) const;
 	int NumStates() const;
 	int NumActions() const;
 	double ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const;
+
+	//double Reward(const State& s,  ACT_TYPE a) const;
+	double Reward(int s,  ACT_TYPE a) const;
+
 
 	State* CreateStartState(std::string type) const;
 	Belief* InitialBelief(const State* start, std::string type = "DEFAULT") const;

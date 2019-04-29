@@ -74,9 +74,27 @@ public:
 Tiger::Tiger() {
 }
 
+bool Tiger::Step_world( State& s,double random_num,  ACT_TYPE action, double& reward,
+    OBS_TYPE obs) const {
+
+	TigerState& state = static_cast<TigerState&>(s);
+    std::cout<<"Step_world"<<std::endl;
+
+	bool terminal = false;
+    if (action == LEFT || action == RIGHT) {
+		reward = state.tiger_position != action ? 10 : -100;
+		state.tiger_position = random_num <= 0.5 ? LEFT : RIGHT;
+	} else {
+		reward = -1;
+	}
+	return terminal;
+
+
+} 
+
 bool Tiger::Step(State& s, double random_num, ACT_TYPE action, double& reward,
 	OBS_TYPE& obs) const {
-    std::cout<<"obs"<<obs<<std::endl;
+    //std::cout<<"step"<<obs<<std::endl;
 	TigerState& state = static_cast<TigerState&>(s);
 	bool terminal = false;
 
@@ -102,9 +120,27 @@ int Tiger::NumActions() const {
 	return 3;
 }
 
+double Tiger::Reward(int s, ACT_TYPE a) const
+{
+    std::cout<<"reward function"<<std::endl;
+    //ROS_INFO("reward");
+
+    //TigerState& state = static_cast<TigerState&>(s);
+    double reward = 0;
+    if (a== LEFT || a== RIGHT) {
+        reward =s!= a? 10 : -100;
+    } else {
+        reward = -1;
+	}
+    return reward;
+
+}
+
+
 double Tiger::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const {
 	const TigerState& state = static_cast<const TigerState&>(s);
 
+    std::cout<<"ObsProb"<<std::endl;
 	if (a != LISTEN)
 		return obs == 2;
 
@@ -116,6 +152,7 @@ State* Tiger::CreateStartState(string type) const {
 }
 
 Belief* Tiger::InitialBelief(const State* start, string type) const {
+    std::cout<<"tiger_belief"<<std::endl;
 	vector<State*> particles;
 	TigerState* left = static_cast<TigerState*>(Allocate(-1, 0.5));
 	left->tiger_position = LEFT;

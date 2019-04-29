@@ -67,8 +67,12 @@ class hsr_interface(object):
             coin = np.random.uniform()
             if coin <0.5:
                 self.tiger_position = 0
+                # obs = 0
+                obs = 0
             else:
                 self.tiger_position =1
+                obs = 1
+                # obs =1
         else:
             reward = -1
             coin = np.random.uniform()

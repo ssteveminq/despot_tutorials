@@ -8,12 +8,31 @@
 // for tests
 #include <iostream>
 
-using namespace despot;
+//using namespace despot;
+namespace despot{
 
 #define TAG 4
 #define DEFAULT_NOISE_SIGMA 0.5
 #define TERMINATION_OBSERVATION 101
 #define NUM_LASER_DIRECTIONS 8
+
+TigerWorld::TigerWorld(DSPOMDP* model, unsigned seed):model_(model)
+{
+    std::cout<<"tiger world constructor"<<std::endl;
+    random_= Random(seed);
+
+}
+TigerWorld::~TigerWorld(){
+    if (model_ != NULL)
+    {
+    
+        delete model_;
+        model_ = NULL;
+    
+    }
+
+
+}
 
 double TigerWorld::noise_sigma_ = DEFAULT_NOISE_SIGMA;
 
@@ -45,25 +64,31 @@ bool TigerWorld::Connect(){
 	//client = nh->serviceClient<tiger::TagActionObs>("laser_tag_action_obs");
 
     std::cout<<"world_connect done"<<std::endl;
+    return true;
 }
 
 //Initialize or reset the environment (for simulators or POMDP world only), return the start state of the system if applicable
 State* TigerWorld::Initialize(){
-	return NULL;
+    std::cout<<"tiger world initialized"<<std::endl;
+    state_ = model_->CreateStartState();
+    return state_;
+	//return NULL;
 }
 
 //Get the state of the system (only applicable for simulators or POMDP world)
-State* TigerWorld::GetCurrentState(){
-    return NULL;
+State* TigerWorld::GetCurrentState() const {
+    std::cout<<"get current state tiger_world"<<std::endl;
+    //ROS_INFO("get current state");
+    return state_;
 
-	//return NULL;
 }
 
 //Send action to be executed by the system, receive observations terminal signals from the system
 bool TigerWorld::ExecuteAction(ACT_TYPE action, OBS_TYPE& obs){
 
-    ROS_INFO("execute_action");
+    ROS_INFO("tiger execute_action");
 
+	//TigerState state; 
     actionlib::SimpleActionClient<tiger::TrackObsAction> ac_("tiger_obs", true);
     ac_.waitForServer();
     
@@ -71,24 +96,30 @@ bool TigerWorld::ExecuteAction(ACT_TYPE action, OBS_TYPE& obs){
     goal.action = (int) action;
     ac_.sendGoal(goal);
 
-    bool finished_timeout = ac_.waitForResult(ros::Duration(10.0));
+    bool finished_timeout = ac_.waitForResult(ros::Duration(3.0));
     if(finished_timeout )
     {
         //actionlib::SimpleClientGoalState state =ac_.getSTate();
         ROS_INFO("Obs action succeed");
         //SimpleClientGoalState = ac_.getState();
         tiger::TrackObsResult result= *(ac_.getResult());
-        tiger_state = result.state;
+        //state.tiger_position =  result.state;
+        obs = static_cast<OBS_TYPE>(result.observations);
+        //step_reward_ = result.reward;
+        //model_->reward = result.reward;)
+        std::cout<<"obs from action"<<obs<<std::endl;
+        //state_ = &state;
          //*ac_.getResult();
-    
     }
     else
     {
         ROS_INFO("Obs_function did not finish before the time out");
-    
     }
 
-    return 0;
+    bool terminal = dynamic_cast<Tiger*>(model_)->Step_world(*state_,random_.NextDouble(), action, step_reward_, obs);
+    return terminal;
+
+    //return 0;
 	/* laser_tag::TagActionObs is a ROS service that takes in an action (integer) 
 	 * and outputs observations (8 intergers) after executing the action. If the 
 	 * 'Tag' action is called, it returns a boolean 'tag_success' with the outcome.
@@ -138,5 +169,6 @@ bool TigerWorld::ExecuteAction(ACT_TYPE action, OBS_TYPE& obs){
 		return 0; // continue
 	}
     */
+}
 }
 

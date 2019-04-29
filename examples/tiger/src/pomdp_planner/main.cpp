@@ -2,6 +2,7 @@
 #include <despot/planner.h>
 #include <tiger.h>
 #include <tiger_world.h>
+#include <despot/util/seeds.h>
 
 using namespace despot;
 
@@ -21,21 +22,21 @@ public:
   
   World* InitializeWorld(std::string& world_type, DSPOMDP* model, option::Option* options)
   {
-      std::cout<<"world initialized"<<std::endl;
+      //std::cout<<"world initialized"<<std::endl;
       //Create a custom world as defined and implemented by the user
-      TigerWorld* world = new TigerWorld();
+      //TigerWorld* world = new TigerWorld();
+       //return InitializePOMDPWorld(world_type,model, options);
+      TigerWorld* world = new TigerWorld(model, Seeds::Next());
       //Establish connection with external system
-      std::cout<<"world initialized before connect"<<std::endl;
       world->Connect();
-      std::cout<<"world initialized midddle"<<std::endl;
       //Initialize the state of the external system
       world->Initialize();
       //static_cast<Tiger*>(model)->NoiseSigma(TigerWorld::noise_sigma_);
       //Inform despot the type of world
       world_type = "simulator";
-      return world; 
 
-      std::cout<<"world initialized done"<<std::endl;
+      std::cout<<"tigerworld initialized done"<<std::endl;
+      return world; 
   }
 
   void InitializeDefaultParameters() {
@@ -89,4 +90,5 @@ public:
 
 int main(int argc, char* argv[]) {
   return MyPlanner().RunPlanning(argc, argv);
+  //return MyPlanner().RunEvaluation(argc, argv);
 }
