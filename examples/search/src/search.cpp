@@ -190,7 +190,8 @@ bool Search::Step_world( State& s,double random_num,  ACT_TYPE action, double& r
 //should update state and observe
 bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
 	OBS_TYPE& obs) const {
-    //std::cout<<"step"<<obs<<std::endl;
+    //std::cout<<"random_num"<<random_num<<std::endl;
+    
 	SearchState& state = static_cast<SearchState&>(s);
 	bool terminal = false;
 
@@ -239,7 +240,7 @@ bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
             else
                 state.object_position = OCCLUSION;
 
-            reward=-50;
+            reward=-20;
         }
         else if(action == MOVE)
         {
@@ -257,9 +258,9 @@ bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
             else
                 state.object_position = VISIBLE;
 
-            reward=-1;
+            reward=-5;
         }
-        reward=0;
+        //reward=0;
     }
     else{//state == MISSING
 
@@ -278,7 +279,7 @@ bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
             else
                 state.object_position = MISSING;
 
-            reward=-50;
+            reward=-20;
         }
         else if(action == WAIT)
         {
@@ -287,14 +288,14 @@ bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
             else
                 state.object_position = MISSING;
 
-            reward=-1;
+            reward=-5;
         }
         
-        reward=0;
+        //reward=0;
     }
 
     if (random_num <= NOISE)
-        obs = 4-state.object_position;
+        obs = 2-state.object_position;
     else
         obs = state.object_position;
 
@@ -545,7 +546,7 @@ double Search::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE action) const {
 }
 
 State* Search::CreateStartState(string type) const {
-	return new SearchState(Random::RANDOM.NextInt(2));
+	return new SearchState(Random::RANDOM.NextInt(3));
 }
 
 Belief* Search::InitialBelief(const State* start, string type) const {
