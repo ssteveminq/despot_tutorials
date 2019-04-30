@@ -114,6 +114,7 @@ bool SearchWorld::ExecuteAction(ACT_TYPE action, OBS_TYPE& obs){
         ROS_INFO("Obs_function did not finish before the time out");
     }
 
+    //Should update state and reward
     bool terminal = dynamic_cast<Search*>(model_)->Step_world(*state_,random_.NextDouble(), action, step_reward_, obs);
     return terminal;
 

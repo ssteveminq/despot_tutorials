@@ -2,6 +2,7 @@
 #define SEARCH_H
 
 #include <despot/interface/pomdp.h>
+#include <despot/util/random.h>
 
 namespace despot {
 
@@ -28,8 +29,27 @@ class Search: public DSPOMDP {
 private:
 	mutable MemoryPool<SearchState> memory_pool_;
 
+//protected:
+	//std::vector<OBS_TYPE> obs_;
+	//std::vector<RegDemoState*> states_;
+
+	//std::vector<std::vector<std::vector<State> > > transition_probabilities_; //state, action, [state, weight]
+	//mutable std::vector<ACT_TYPE> default_action_;
+
+
 public:
-	static const ACT_TYPE LEFT, RIGHT, LISTEN;
+
+    enum {
+        //state
+        VISIBLE=1, OCCLUSION=2, MISSING=3
+    };
+
+    enum {
+        //observations
+        TARGET =1, OCC_NOTARGET=2, MISS_NOTARGET=3
+    };
+
+	static const ACT_TYPE SEARCH, MOVE, WAIT;
 	static const double NOISE;
 
 	Search();
@@ -51,11 +71,11 @@ public:
 	Belief* InitialBelief(const State* start, std::string type = "DEFAULT") const;
 
 	inline double GetMaxReward() const {
-		return 10;
+		return 50;
 	}
 
 	inline ValuedAction GetBestAction() const {
-		return ValuedAction(LISTEN, -1);
+		return ValuedAction(WAIT, -1);
 	}
 	ScenarioLowerBound* CreateScenarioLowerBound(std::string name = "DEFAULT",
 		std::string particle_bound_name = "DEFAULT") const;

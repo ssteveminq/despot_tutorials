@@ -1,5 +1,5 @@
 # 0 - Search     
-# 1 - Navi_See     
+# 1 - MOVE_See     
 # 2 - WAIT
 
 int32 action

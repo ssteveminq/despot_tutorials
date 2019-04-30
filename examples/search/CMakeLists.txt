@@ -50,12 +50,10 @@ include_directories(
 #target_link_libraries(tiger_controller ${catkin_LIBRARIES})
 
 ## Declare a C++ executable
-add_executable(pomdp_planner src/search.cpp
+add_executable(pomdp_planner  src/search.cpp
     src/search_world.cpp src/main.cpp)
 add_dependencies(pomdp_planner ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(pomdp_planner despot ${catkin_LIBRARIES})
-
-
 
 
 

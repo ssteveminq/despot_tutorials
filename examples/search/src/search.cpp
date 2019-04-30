@@ -27,7 +27,14 @@ SearchState::SearchState(int position) :
 }
 
 string SearchState::text() const {
-	return object_position == Search::SEARCH ? "SEARCH" : "MOVE";
+    if(object_position == Search::VISIBLE)
+        return "Visible";
+    else if(object_position == Search::OCCLUSION)
+        return "OCCLUSION";
+    else if (object_position == Search::MISSING)
+        return "MISSING";
+    else
+        return "state is Wrong: Check the state";
 }
 
 /* =============================================================================
@@ -52,7 +59,6 @@ public:
 
 		 actions->push_back(history.LastObservation());
 		 */
-
 		int count_diff = 0;
 		for (int i = history.Size() - 1;
 			i >= 0 && history.Action(i) == Search::WAIT; i--)
@@ -70,10 +76,10 @@ public:
 /* =============================================================================
  * Search class
  * =============================================================================*/
-
 Search::Search() {
 }
 
+//should update state via transition proababilities
 bool Search::Step_world( State& s,double random_num,  ACT_TYPE action, double& reward,
     OBS_TYPE obs) const {
 
@@ -81,39 +87,222 @@ bool Search::Step_world( State& s,double random_num,  ACT_TYPE action, double& r
     std::cout<<"Step_world"<<std::endl;
 
 	bool terminal = false;
-    if (action == SEARCH || action == MOVE) {
-		reward = state.object_position != action ? 10 : -100;
-		state.object_position = random_num <= 0.5 ? SEARCH : MOVE;
-	} else {
-		reward = -1;
-	}
-	return terminal;
+    if(state.object_position == Search::VISIBLE)
+    {
+        //reward=20;
+        if (action == SEARCH) {
+
+            //if(random_num<0.05)
+                //state.object_position = OCCLUSION ;
+            if(random_num<0.25)
+                state.object_position = MISSING;
+            else
+                state.object_position = VISIBLE;
+        }
+        else if(action == MOVE){
+        
+            if(random_num<0.5)
+                state.object_position = MISSING;
+            else
+                state.object_position = VISIBLE;
+        }
+        else if(action == WAIT)
+        {
+            if(random_num<0.05)
+                state.object_position = MISSING;
+            else if(random_num<0.1)
+                state.object_position = OCCLUSION ;
+            else
+                state.object_position = VISIBLE;
+
+        }
+
+    }
+    else if(state.object_position == Search::OCCLUSION){
+
+        if (action == SEARCH) {
+            if(random_num<0.15)
+                state.object_position = VISIBLE;
+            else
+                state.object_position = OCCLUSION;
+        }
+        else if(action == MOVE)
+        {
+            if(random_num<0.2)
+                state.object_position = OCCLUSION;
+            else
+                state.object_position = VISIBLE;
+        }
+        else if(action == WAIT)
+        {
+            if(random_num<0.2)
+                state.object_position = OCCLUSION;
+            else
+                state.object_position = VISIBLE;
+        }
+        reward=0;
+    }
+    else{//state == MISSING
+
+        if (action == SEARCH) {
+            if(random_num<0.2)
+                state.object_position = MISSING;
+            else
+                state.object_position = VISIBLE;
+        }
+        else if(action == MOVE)
+        {
+            if(random_num<0.15)
+                state.object_position = VISIBLE;
+            else
+                state.object_position = MISSING;
+        }
+        else if(action == WAIT)
+        {
+            if(random_num<0.2)
+                state.object_position = VISIBLE;
+            else
+                state.object_position = MISSING;
+        }
+        
+        reward=0;
+    }
 
 
+    //if(obs == Search::TARGET)
+    //{
+        //reward=20;
+        //state.object_position = random_num <= 0.95 ? VISIBLE: MISSING;
+    //}
+    //else{
+        //state.object_position = random_num <= 0.6 ? OCC_NOTARGET: MISSING;
+        //if (action == SEARCH || action == MOVE) {
+                //reward=5;
+        //}
+        //else{
+            //reward=-1;
+        //}
+    //}
+
+    return terminal;
 } 
 
+//should update state and observe
 bool Search::Step(State& s, double random_num, ACT_TYPE action, double& reward,
 	OBS_TYPE& obs) const {
     //std::cout<<"step"<<obs<<std::endl;
 	SearchState& state = static_cast<SearchState&>(s);
 	bool terminal = false;
 
-	if (action == SEARCH || action == MOVE) {
-		reward = state.object_position != action ? 10 : -100;
-		state.object_position = random_num <= 0.5 ? SEARCH : MOVE;
-		obs = 2; // can use arbitary observation
-	} else {
-		reward = -1;
-		if (random_num <= 1 - NOISE)
-			obs = state.object_position;
-		else
-			obs = (SEARCH + MOVE - state.object_position);
-	}
+    if(state.object_position == Search::VISIBLE)
+    {
+        //reward=20;
+        if (action == SEARCH) {
+
+            //if(random_num<0.05)
+                //state.object_position = OCCLUSION ;
+            if(random_num<0.25)
+                state.object_position = MISSING;
+            else
+                state.object_position = VISIBLE;
+
+            reward=-30;
+        }
+        else if(action == MOVE){
+        
+            if(random_num<0.5)
+                state.object_position = MISSING;
+            else
+                state.object_position = VISIBLE;
+
+            reward=-30;
+        }
+        else if(action == WAIT)
+        {
+            if(random_num<0.05)
+                state.object_position = MISSING;
+            else if(random_num<0.1)
+                state.object_position = OCCLUSION ;
+            else
+                state.object_position = VISIBLE;
+
+            reward=10;
+
+        }
+
+    }
+    else if(state.object_position == Search::OCCLUSION){
+
+        if (action == SEARCH) {
+            if(random_num<0.15)
+                state.object_position = VISIBLE;
+            else
+                state.object_position = OCCLUSION;
+
+            reward=-50;
+        }
+        else if(action == MOVE)
+        {
+            if(random_num<0.2)
+                state.object_position = OCCLUSION;
+            else
+                state.object_position = VISIBLE;
+
+            reward=50;
+        }
+        else if(action == WAIT)
+        {
+            if(random_num<0.2)
+                state.object_position = OCCLUSION;
+            else
+                state.object_position = VISIBLE;
+
+            reward=-1;
+        }
+        reward=0;
+    }
+    else{//state == MISSING
+
+        if (action == SEARCH) {
+            if(random_num<0.2)
+                state.object_position = MISSING;
+            else
+                state.object_position = VISIBLE;
+
+            reward=50;
+        }
+        else if(action == MOVE)
+        {
+            if(random_num<0.15)
+                state.object_position = VISIBLE;
+            else
+                state.object_position = MISSING;
+
+            reward=-50;
+        }
+        else if(action == WAIT)
+        {
+            if(random_num<0.2)
+                state.object_position = VISIBLE;
+            else
+                state.object_position = MISSING;
+
+            reward=-1;
+        }
+        
+        reward=0;
+    }
+
+    if (random_num <= NOISE)
+        obs = 4-state.object_position;
+    else
+        obs = state.object_position;
+
 	return terminal;
 }
 
 int Search::NumStates() const {
-	return 2;
+	return 3;
 }
 
 int Search::NumActions() const {
@@ -121,16 +310,139 @@ int Search::NumActions() const {
 }
 
 
-double Search::Reward(const State& state,  ACT_TYPE a) const
+double Search::Reward(const State& s,  ACT_TYPE action) const
 {
     std::cout<<"search reward function"<<std::endl;
-    const SearchState* s= static_cast<const SearchState*>(&state);
+    double random_num = Random::RANDOM.NextDouble();
+
+    const SearchState* state= static_cast<const SearchState*>(&s);
     double reward = 0;
-    if (a== SEARCH || a== MOVE) {
-        reward =s->object_position!= a? 10 : -100;
-    } else {
-        reward = -1;
+
+    if(state->object_position == Search::VISIBLE)
+    {
+        //reward=20;
+        if (action == SEARCH) {
+
+
+            reward=-30;
+            //if(random_num<0.25){
+                //state->object_position = MISSING;
+                //reward=-30;
+            //}
+            //else{
+                //state->object_position = VISIBLE;
+                //reward=+1;
+            //}
+        }
+        else if(action == MOVE){
+        
+            reward=-30;
+            //if(random_num<0.5){
+                //state->object_position = MISSING;
+                //reward=-30;
+            //}
+            //else{
+                //state->object_position = VISIBLE;
+                //reward=1;
+            //}
+
+        }
+        else if(action == WAIT)
+        {
+
+            reward=10;
+            //if(random_num<0.05){
+                //state->object_position = MISSING;
+                //reward=0;
+            //}
+            //else if(random_num<0.1){
+                //state->object_position = OCCLUSION ;
+                //reward=0;
+            //}
+            //else{
+                //state->object_position = VISIBLE;
+                //reward=10;
+            //}
+
+        }
+
     }
+    else if(state->object_position == Search::OCCLUSION){
+
+        if (action == SEARCH) {
+            //if(random_num<0.15){
+                //state->object_position = VISIBLE;
+            //}
+            //else
+            //{
+                //state->object_position = OCCLUSION;
+            //}
+            reward=-50;
+        }
+        else if(action == MOVE)
+        {
+            //if(random_num<0.2)
+            //{
+                //state->object_position = OCCLUSION;
+                //reward=1;
+            //}
+            //else{
+                //state->object_position = VISIBLE;
+                //reward=50;
+            //}
+            //
+                reward=50;
+        }
+        else if(action == WAIT)
+        {
+            //if(random_num<0.2){
+                //state->object_position = OCCLUSION;
+
+            //}
+            //else{
+                //state->object_position = VISIBLE;
+            //}
+
+            reward=-1;
+        }
+    }
+    else{//state == MISSING
+
+        if (action == SEARCH) {
+            //if(random_num<0.2){
+                //state->object_position = MISSING;
+                //reward=1;
+            //}
+            //else{
+                //state->object_position = VISIBLE;
+                //reward=50;
+            //}
+            //
+                reward=50;
+        }
+        else if(action == MOVE)
+        {
+            //if(random_num<0.15){
+                //state->object_position = VISIBLE;
+            //}
+            //else{
+                //state->object_position = MISSING;
+            //}
+            reward=-50;
+        }
+        else if(action == WAIT)
+        {
+            //if(random_num<0.2){
+                //state->object_position = VISIBLE;
+            //}
+            //else{
+                //state->object_position = MISSING;
+            //}
+
+            reward=-1;
+        }
+    }
+
     return reward;
 }
 
@@ -150,15 +462,86 @@ double Search::Reward(int s, ACT_TYPE a) const
 
 
 
-double Search::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE a) const {
+double Search::ObsProb(OBS_TYPE obs, const State& s, ACT_TYPE action) const {
 	const SearchState& state = static_cast<const SearchState&>(s);
+    double prob=0.0;
 
-    //std::cout<<"ObsProb"<<std::endl;
-	if (a != WAIT)
-        return (obs==2);
-		//return 0.0;
+    if(state.object_position == Search::VISIBLE)
+    {
+        if (action == SEARCH) {
+            if(obs == TARGET)
+                prob =0.8;
+            else if (obs == MISS_NOTARGET)
+                prob = 0.2;
+        }
+        else if(action == MOVE){
+            if(obs == TARGET)
+                prob =0.2;
+            else if (obs == MISS_NOTARGET)
+                prob = 0.4;
+            else
+                prob = 0.4;
+        }
+        else if(action == WAIT)
+        {
+            if(obs == TARGET)
+                prob =0.9;
+            else if (obs == MISS_NOTARGET)
+                prob = 0.05;
+            else
+                prob = 0.05;
+        }
 
-	return state.object_position == obs ? (1 - NOISE) : NOISE;
+    }
+    else if(state.object_position == Search::OCCLUSION){
+
+        if (action == SEARCH) {
+            if(obs == TARGET)
+                prob =0.1;
+            else if (obs == OCC_NOTARGET)
+                prob = 0.9;
+        }
+        else if(action == MOVE)
+        {
+            if(obs == TARGET)
+                prob =0.9;
+            else if (obs == OCC_NOTARGET)
+                prob = 0.1;
+        }
+        else if(action == WAIT)
+        {
+            if(obs == TARGET)
+                prob =0.15;
+            else if (obs == OCC_NOTARGET)
+                prob = 0.85;
+        }
+    }
+    else{//state == MISSING
+
+        if (action == SEARCH) {
+
+            if(obs == TARGET)
+                prob =0.9;
+            else if (obs == MISS_NOTARGET)
+                prob = 0.1;
+        }
+        else if(action == MOVE)
+        {
+            if(obs == TARGET)
+                prob =0.1;
+            else if (obs == MISS_NOTARGET)
+                prob = 0.9;
+        }
+        else if(action == WAIT)
+        {
+            if(obs == TARGET)
+                prob =0.15;
+            else if (obs == MISS_NOTARGET)
+                prob = 0.85;
+        }
+    }
+    return prob;
+
 }
 
 State* Search::CreateStartState(string type) const {
@@ -213,16 +596,25 @@ void Search::PrintBelief(const Belief& belief, ostream& out) const {
 }
 
 void Search::PrintObs(const State& state, OBS_TYPE obs, ostream& out) const {
+	if (obs == TARGET ) {
+		out << "TARGET " << endl;
+	} else if (obs == OCC_NOTARGET) {
+		out << "OCC_NOTARGET" << endl;
+	} else {
+		out << "MISS_NOTARGET" << endl;
+	}
+
+
 	out << (obs == SEARCH ? "SEARCH" : "MOVE") << endl;
 }
 
 void Search::PrintAction(ACT_TYPE action, ostream& out) const {
 	if (action == SEARCH) {
-		out << "Open left" << endl;
+		out << "SEARCH" << endl;
 	} else if (action == MOVE) {
-		out << "Open right" << endl;
+		out << "MOVE_SEE" << endl;
 	} else {
-		out << "Listen" << endl;
+		out << "WAIT" << endl;
 	}
 }
 

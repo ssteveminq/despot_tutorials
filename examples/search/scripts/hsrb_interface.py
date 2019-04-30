@@ -36,16 +36,10 @@ class hsr_interface(object):
         self.result_= TrackObsResult()
         self.target_yaw=0.0
         self.noise_probability=0.15
-        self.tiger_position =1;
+        self.object_position =1;
         # Preparation to use robot functions
 
-        # self.listener = tf.TransformListener()
-	# self.listener.waitForTransform(_ORIGIN_TF,_BASE_TF, rospy.Time(), rospy.Duration(5.0))
         self.vel_pub = rospy.Publisher('/hsrb/command_velocity', geometry_msgs.msg.Twist,queue_size=10)
-        # self.headPub = rospy.Publisher('/hsrb/head_trajectory_controller/command', JointTrajectory, queue_size=1)
-
-        # jointstates_topic='hsrb/joint_states'
-	# rospy.Subscriber(jointstates_topic, JointState, self.joint_state_Cb)
 
         robot_pose_topic='global_pose'
         rospy.Subscriber(robot_pose_topic, PoseStamped, self.robot_pose_Cb)
@@ -53,41 +47,26 @@ class hsr_interface(object):
         self._as = actionlib.SimpleActionServer(self._action_name, TrackObsAction, execute_cb=self.execute_cb, auto_start = False)
         self._as.start()
 
-   
     def execute_cb(self, goal):
-        rospy.loginfo("obs action called")
-        print goal
+        rospy.loginfo("action_server obs action called")
+        # print goal
         print("----------------------")
-        if goal.action == 0 or goal.action==1:
-            if goal.action == self.tiger_position:
-                reward = -100
-            else:
-                reward = 10
-
-            coin = np.random.uniform()
-            if coin <0.5:
-                self.tiger_position = 0
-                # obs = 0
-                obs = 2
-            else:
-                self.tiger_position =1
-                obs = 2
-                # obs =1
+        self.object_position = 0
+        if goal.action == 0 or goal.action==1: #search & move_see action
+            self.object_position =1
+            obs = 2
         else:
             reward = -1
             coin = np.random.uniform()
-            print coin
+            # print coin
             if (coin <= 1.0-self.noise_probability):
-                obs = self.tiger_position
+                obs = self.object_position
             else:
-                obs =1-self.tiger_position 
+                obs =1-self.object_position 
             
-        # obset = [];
-        # obset.append(0);
-        # obset.append(1);
-        self.result_.state = self.tiger_position
+        self.result_.state = self.object_position
         self.result_.observations = obs
-        self.result_.reward = reward
+        self.result_.reward = 0
         self.result_.success=True
         self._as.set_succeeded(self.result_)
         # self._as.publish_feedback(self.feedback_)
